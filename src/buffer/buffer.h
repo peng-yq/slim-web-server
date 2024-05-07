@@ -11,7 +11,7 @@
 #include <sys/uio.h>
 #include <vector>
 #include <mutex>
-#include <assert.h>
+#include <cassert>
 
 // A thread-safe buffer class for managing a dynamic array of bytes.
 class Buffer {

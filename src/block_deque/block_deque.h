@@ -81,19 +81,19 @@ BlockDeque<T>::~BlockDeque() {
 
 template<class T>
 void BlockDeque<T>::flush() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     consumer_.notify_one();
 }
 
 template<class T>
 void BlockDeque<T>::clear() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     deque_.clear();
 }
 
 template<class T>
 void BlockDeque<T>::close() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     isClose_ = true;
     deque_.clear();
     consumer_.notify_all();
@@ -102,31 +102,31 @@ void BlockDeque<T>::close() {
 
 template<class T>
 bool BlockDeque<T>::empty() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     return deque_.empty();
 }
 
 template<class T>
 bool BlockDeque<T>::full() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     return deque_.size() >= capacity_;
 }
 
 template<class T>
 size_t BlockDeque<T>::size() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     return deque_.size();
 }
 
 template<class T>
 size_t BlockDeque<T>::capacity() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     return capacity_;
 }
 
 template<class T>
 T BlockDeque<T>::front() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     if (deque_.empty()) {
         throw std::runtime_error("Attempted to access front of empty deque");
     }
@@ -135,7 +135,7 @@ T BlockDeque<T>::front() {
 
 template<class T>
 T BlockDeque<T>::back() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     if (deque_.empty()) {
         throw std::runtime_error("Attempted to access back of empty deque");
     }
@@ -144,12 +144,12 @@ T BlockDeque<T>::back() {
 
 template<class T>
 void BlockDeque<T>::push_back(const T &item) {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     while (deque_.size() >= capacity_) {
         if (isClose_) {
             throw std::runtime_error("Attempted to push_back to closed deque");
         }
-        producer_.wait(lock);
+        producer_.wait(locker);
     }
     if (isClose_) {
         throw std::runtime_error("Attempted to push_back to closed deque");
@@ -160,12 +160,12 @@ void BlockDeque<T>::push_back(const T &item) {
 
 template<class T>
 void BlockDeque<T>::push_front(const T &item) {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     while (deque_.size() >= capacity_) {
         if (isClose_) {
             throw std::runtime_error("Attempted to push_front to closed deque");
         }
-        producer_.wait(lock);
+        producer_.wait(locker);
     }
     if (isClose_) {
         throw std::runtime_error("Attempted to push_front to closed deque");
@@ -176,12 +176,12 @@ void BlockDeque<T>::push_front(const T &item) {
 
 template<class T>
 bool BlockDeque<T>::pop_front(T &item) {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     while (deque_.empty()) {
         if (isClose_) {
             return false;  
         }
-        consumer_.wait(lock);
+        consumer_.wait(locker);
     }
     item = deque_.front();
     deque_.pop_front();
@@ -191,12 +191,12 @@ bool BlockDeque<T>::pop_front(T &item) {
 
 template<class T>
 bool BlockDeque<T>::pop_front(T &item, int timeout) {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
     while (deque_.empty()) {
         if (isClose_) {
             return false;  
         }
-        if (consumer_.wait_for(lock, std::chrono::seconds(timeout)) == std::cv_status::timeout) {
+        if (consumer_.wait_for(locker, std::chrono::seconds(timeout)) == std::cv_status::timeout) {
             return false;  
         }
     }
