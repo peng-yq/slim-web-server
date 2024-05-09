@@ -59,11 +59,11 @@ void Log::Write(int level, const char* format, ...) {
         char tail[36] = {0};
         snprintf(tail, 36, "%04d_%02d_%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
         if (day_ != t.tm_mday) {
-            snprintf(newFile, LOG_NAME_LEN - 72, "%s/%s%s", path_, tail, suffix);
+            snprintf(newFile, LOG_NAME_LEN - 72, "%s/%s%s", path_, tail, suffix_);
             day_ = t.tm_mday;
             lineCount_ = 0;
         } else {
-            snprintf(newFile, LOG_NAME_LEN - 72, "%s/%s-%d%s", path_, tail, (lineCount_ / MAX_LINES), suffix);
+            snprintf(newFile, LOG_NAME_LEN - 72, "%s/%s-%d%s", path_, tail, (lineCount_ / MAX_LINES), suffix_);
         }
         locker.lock();
         Flush();
@@ -78,7 +78,7 @@ void Log::Write(int level, const char* format, ...) {
         AppendLogLevelTitle(level);
         ++lineCount_;
         va_start(vaList, format);
-        int m = vsnprintf(buffer_.BeginWrite(), buffer_.AdvanceWritePointer(), format, vaList);
+        int m = vsnprintf(buffer_.BeginWrite(), buffer_.GetWritableBytes(), format, vaList);
         va_end(vaList);
         buffer_.AdvanceWritePointer(m);
         buffer_.Append("\n\0", 2);
@@ -102,9 +102,9 @@ void Log::Init(int level, const char* path, const char* suffix, int capacity) {
     if (capacity > 0) {
         isAsync_ = true;
         if (!blockDeque_) {
-            std::unique_lock<BlockDeque<std::string>> blockDeque(new BlockDeque<std::string>);
+            std::unique_ptr<BlockDeque<std::string>> blockDeque(new BlockDeque<std::string>);
             blockDeque_ = move(blockDeque);
-            std::unique_lock<std::thread> writeThread(new std::thread<FlushLogThread>);
+            std::unique_ptr<std::thread> writeThread(new std::thread(AsyncFlushLog));
             writeThread_ = move(writeThread);
         }
     } else {
