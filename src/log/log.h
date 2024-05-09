@@ -69,6 +69,9 @@ private:
     // Destructor.
     virtual ~Log();
 
+    Log(const Log& other) = delete;
+    Log& operator=(const Log& other) = delete;
+    
     // Appends the log level title to the log message.
     void AppendLogLevelTitle(int level);
 
