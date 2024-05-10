@@ -44,7 +44,7 @@ public:
     void AdvanceReadPointer(size_t len);
 
     // Returns a constant pointer to the beginning of the writable area.
-    const char* BeginWrite() const;
+    const char* BeginWriteConst() const;
 
     // Returns a modifiable pointer to the beginning of the writable area.
     char* BeginWrite();

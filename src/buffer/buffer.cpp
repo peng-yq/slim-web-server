@@ -53,7 +53,7 @@ void Buffer::AdvanceReadPointer(size_t len) {
 }
 
 // Returns a constant pointer to the start of writable data.
-const char* Buffer::BeginWrite() const {
+const char* Buffer::BeginWriteConst() const {
     std::lock_guard<std::mutex> locker(mutex_);
     return BeginPtr_() + writePos_;
 }
