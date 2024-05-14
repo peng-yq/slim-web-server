@@ -6,11 +6,11 @@
 // *srcDir can't be changed, value of srcDir can be changed
 const char* HttpConn::srcDir;
 
-std::atomic<int> HttpConn::userCount = 0;
+std::atomic<int> HttpConn::userCount;
 
 bool HttpConn::isET;
 
-HttpConn::HttpConn() : fd_(-1), addr_({0}), isClose_(true) {}
+HttpConn::HttpConn() : fd_(-1), isClose_(true), addr_({0}) {}
 
 HttpConn::~HttpConn() {
     Close();

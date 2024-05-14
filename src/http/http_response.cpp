@@ -3,7 +3,7 @@
 //
 #include "http_response.h"
 
-const std::unordered_map<std::string, std::string> CONTENT_TYPE = {
+const std::unordered_map<std::string, std::string> HttpResponse::CONTENT_TYPE = {
     {".html",  "text/html"},
     {".xml",   "text/xml"},
     {".xhtml", "application/xhtml+xml"},
@@ -25,14 +25,14 @@ const std::unordered_map<std::string, std::string> CONTENT_TYPE = {
     {".js",    "text/javascript"},
 };
 
-const std::unordered_map<int, std::string> CODE_STATUS = {
+const std::unordered_map<int, std::string> HttpResponse::CODE_STATUS = {
     {200, "OK"},
     {400, "Bad Request"},
     {403, "Forbidden"},
     {404, "Not Found"},
 };
 
-const std::unordered_map<int, std::string> ERROR_CODE_PATH = {
+const std::unordered_map<int, std::string> HttpResponse::ERROR_CODE_PATH = {
     {400, "/400.html"},
     {403, "/403.html"},
     {404, "/404.html"},

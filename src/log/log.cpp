@@ -5,7 +5,7 @@
 #include "log.h"
 
 // Constructor: Initializes the log system defaults.
-Log::Log() : lineCount_(0), isAsync_(false), day_(0), fp_(nullptr) {}
+Log::Log() : lineCount_(0), day_(0), isAsync_(false), fp_(nullptr) {}
 
 // Destructor: Ensures all resources are properly released and threads joined.
 Log::~Log() {

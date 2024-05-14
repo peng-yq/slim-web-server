@@ -49,7 +49,7 @@ std::string HttpRequest::GetPost(const std::string& key) const {
 }
 
 std::string HttpRequest::GetPost(const char* key) const {
-    assert(key != "");
+    assert(key && key[0] != '\0');
     if (post_.count(key) > 0) {
         return post_.find(key)->second;
     }
@@ -235,6 +235,7 @@ int HttpRequest::ConvertHexToDec(char ch) {
     if (ch >= 'a' && ch <= 'f') {
         return ch - 'a' + 10;
     }
+    return -1;
 }
 
 bool HttpRequest::UserVerify (const std::string& name, const std::string& pwd, bool isLogin) {
