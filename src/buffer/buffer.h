@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/uio.h>
 #include <vector>
-#include <mutex>
+#include <atomic>
 #include <cassert>
 
 // A thread-safe buffer class for managing a dynamic array of bytes.
@@ -83,10 +83,9 @@ private:
     // Resizes or rearranges the buffer to make space for at least 'len' bytes.
     void MakeSpace_(size_t len);
 
-    std::vector<char> buffer_;  // The underlying buffer storage.
-    std::size_t readPos_;       // Current read position in the buffer.
-    std::size_t writePos_;      // Current write position in the buffer.
-    mutable std::mutex mutex_;  // Mutex for protecting access to the buffer.
+    std::vector<char> buffer_;              // The underlying buffer storage.
+    std::atomic<std::size_t> readPos_;       // Current read position in the buffer.
+    std::atomic<std::size_t> writePos_;      // Current write position in the buffer.
 };
 
 #endif // SLIM_WEB_SERVER_BUFFER_H

@@ -8,32 +8,27 @@
 Buffer::Buffer(int bufferSize) : buffer_(bufferSize), readPos_(0), writePos_(0) {}
 
 // Returns the number of writable bytes in the buffer.
-size_t Buffer::GetWritableBytes() const {
-    std::lock_guard<std::mutex> locker(mutex_);
+size_t Buffer::GetWritableBytes() const {   
     return buffer_.size() - writePos_;
 }
 
 // Returns the number of readable bytes in the buffer.
-size_t Buffer::GetReadableBytes() const {
-    std::lock_guard<std::mutex> locker(mutex_);
+size_t Buffer::GetReadableBytes() const {   
     return writePos_ - readPos_;
 }
 
 // Returns the number of bytes available before the read position.
-size_t Buffer::GetPrependableBytes() const {
-    std::lock_guard<std::mutex> locker(mutex_);
+size_t Buffer::GetPrependableBytes() const {    
     return readPos_;
 }
 
 // Returns a pointer to the start of readable data.
-const char* Buffer::BeginRead() const {
-    std::lock_guard<std::mutex> locker(mutex_);
+const char* Buffer::BeginRead() const {   
     return BeginPtr_() + readPos_;
 }
 
 // Ensures there is enough space to write 'len' bytes, resizing if necessary.
-void Buffer::EnsureWritable(size_t len) {
-    std::lock_guard<std::mutex> locker(mutex_);
+void Buffer::EnsureWritable(size_t len) {    
     if (GetWritableBytes() < len) {
         MakeSpace_(len);
     }
@@ -41,40 +36,34 @@ void Buffer::EnsureWritable(size_t len) {
 }
 
 // Advances the write pointer forward by 'len' bytes.
-void Buffer::AdvanceWritePointer(size_t len) {
-    std::lock_guard<std::mutex> locker(mutex_);
+void Buffer::AdvanceWritePointer(size_t len) {   
     writePos_ += len;
 }
 
 // Advances the read pointer forward by 'len' bytes.
-void Buffer::AdvanceReadPointer(size_t len) {
-    std::lock_guard<std::mutex> locker(mutex_);
+void Buffer::AdvanceReadPointer(size_t len) {    
     readPos_ += len;
 }
 
 // Returns a constant pointer to the start of writable data.
-const char* Buffer::BeginWriteConst() const {
-    std::lock_guard<std::mutex> locker(mutex_);
+const char* Buffer::BeginWriteConst() const {    
     return BeginPtr_() + writePos_;
 }
 
 // Returns a modifiable pointer to the start of writable data.
-char* Buffer::BeginWrite() {
-    std::lock_guard<std::mutex> locker(mutex_);
+char* Buffer::BeginWrite() {   
     return BeginPtr_() + writePos_;
 }
 
 // Clears all data in the buffer, resetting positions.
-void Buffer::RetrieveAll() {
-    std::lock_guard<std::mutex> locker(mutex_);
+void Buffer::RetrieveAll() {   
     std::fill(buffer_.begin(), buffer_.end(), 0);
     readPos_ = 0;
     writePos_ = 0;
 }
 
 // Retrieves and returns all readable data as a string, then clears the buffer.
-std::string Buffer::RetrieveAllAsString() {
-    std::lock_guard<std::mutex> locker(mutex_);
+std::string Buffer::RetrieveAllAsString() {  
     std::string str(BeginPtr_() + readPos_, GetReadableBytes());
     RetrieveAll();
     return str;
@@ -106,7 +95,7 @@ void Buffer::Append(const Buffer& buff) {
 
 // Reads data from a file descriptor into the buffer, handling overflow.
 ssize_t Buffer::ReadFromFd(int fd, int* error) {
-    char tempBuffer[65536];
+    char tempBuffer[65535];
     struct iovec iov[2];
     const size_t writable = GetWritableBytes();
 
@@ -118,20 +107,20 @@ ssize_t Buffer::ReadFromFd(int fd, int* error) {
     const ssize_t len = readv(fd, iov, 2);
     if (len < 0) {
         *error = errno;
-    } else {
-        if (static_cast<size_t>(len) <= writable) {
-            AdvanceWritePointer(len);
-        } else {
-            AdvanceWritePointer(writable);
-            Append(tempBuffer, len - writable);
-        }
+    } else if (static_cast<size_t>(len) <= writable){
+        AdvanceWritePointer(len);
+    }
+    else {
+        writePos_ = buffer_.size();
+        Append(tempBuffer, len - writable);
     }
     return len;
 }
 
 // Writes data from the buffer to a file descriptor, advancing the read pointer.
 ssize_t Buffer::WriteToFd(int fd, int* error) {
-    ssize_t len = write(fd, BeginRead(), GetReadableBytes());
+    size_t readSize = GetReadableBytes();
+    ssize_t len = write(fd, BeginRead(), readSize);
     if (len < 0) {
         *error = errno;
     } else {

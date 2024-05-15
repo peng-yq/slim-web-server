@@ -72,10 +72,6 @@ bool HttpRequest::ParseHttpRequest(Buffer& buff) {
         // lineEnd is a pointer to the beginning of the found CRLF sequence in buffer. 
         // If not found, lineEnd will point to the return value of buff.BeginWriteConst().
         const char* lineEnd = std::search(buff.BeginRead(), buff.BeginWriteConst(), CRLF, CRLF + 2);
-        if (lineEnd == buff.BeginWriteConst()) {
-            buff.AdvanceReadPointer(lineEnd - buff.BeginRead());
-            break;
-        }
 
         // line contains all characters from the beginning of the buffer to the first CRLF, excluding the CRLF itself.
         // parse the request according to state_
@@ -98,6 +94,12 @@ bool HttpRequest::ParseHttpRequest(Buffer& buff) {
                 break;
             default:
                 break;
+        }
+        if (lineEnd == buff.BeginWrite()) {
+            if(method_=="POST"&&state_==FINISH){
+                buff.AdvanceReadPointer(lineEnd - buff.BeginRead());
+            }
+            break;
         }
         buff.AdvanceReadPointer(lineEnd + 2 - buff.BeginRead());
     }
@@ -198,10 +200,9 @@ void HttpRequest::ParseFromUrlEncoded_() {
                 // %23 -> '#'
                 // standard url encoding format is %xx
                 num = ConvertHexToDec(body_[i + 1]) * 16 + ConvertHexToDec(body_[i + 2]);               
-                body_[i] = num;
-                body_.erase(body_.begin() + i + 1);
-                body_.erase(body_.begin() + i + 1);
-                n -= 2;
+                body_[i + 2] = num % 10 + '0';
+                body_[i + 1] = num / 10 + '0';
+                i += 2;
                 break;
             case '&':
                 value = body_.substr(j, i - j);
@@ -212,13 +213,13 @@ void HttpRequest::ParseFromUrlEncoded_() {
             default:
                 break;
         }
-        assert(j <= i);
-        // add the last key-value pair
-        // only if key does not exist and value is not empty
-        if (post_.count(key) == 0 && j < i) {
-            value = body_.substr(j, i - j);
-            post_[key] = value;
-        }
+    }
+    assert(j <= i);
+    // add the last key-value pair
+    // only if key does not exist and value is not empty
+    if (post_.count(key) == 0 && j < i) {
+        value = body_.substr(j, i - j);
+        post_[key] = value;
     }
 }
 
@@ -235,7 +236,7 @@ int HttpRequest::ConvertHexToDec(char ch) {
     if (ch >= 'a' && ch <= 'f') {
         return ch - 'a' + 10;
     }
-    return -1;
+    return ch;
 }
 
 bool HttpRequest::UserVerify (const std::string& name, const std::string& pwd, bool isLogin) {

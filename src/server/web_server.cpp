@@ -148,6 +148,15 @@ bool WebServer::InitListenSocket_() {
         return false;
     }
 
+    // set the server socket (listenFd_) to the listening state, 
+    // the maximum number of queued connections allowed is 6
+    ret = listen(listenFd_, 6);
+    if(ret < 0) {
+        LOG_ERROR("Listen Port:%d Error!", port_);
+        close(listenFd_);
+        return false;
+    }
+
     // add listen fd to epoll's listening queue
     // monitor whether the descriptor is readable, 
     // that is whether there is a new connection

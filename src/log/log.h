@@ -73,10 +73,10 @@ private:
     Log& operator=(const Log& other) = delete;
     
     // Appends the log level title to the log message.
-    void AppendLogLevelTitle(int level);
+    void AppendLogLevelTitle_(int level);
 
     // Writes log messages stored in the block deque to the file.
-    void AsyncWrite();
+    void AsyncWrite_();
 };
 
 #define LOG_BASE(level, format, ...) \
@@ -86,11 +86,11 @@ private:
             log->Write(level, format, ##__VA_ARGS__); \
             log->Flush();\
         } \
-    } while (0)
+    } while (0);
 
-#define LOG_DEBUG(format, ...) LOG_BASE(0, format, ##__VA_ARGS__)
-#define LOG_INFO(format, ...) LOG_BASE(1, format, ##__VA_ARGS__)
-#define LOG_WARN(format, ...) LOG_BASE(2, format, ##__VA_ARGS__)
-#define LOG_ERROR(format, ...) LOG_BASE(3, format, ##__VA_ARGS__)
+#define LOG_DEBUG(format, ...) do {LOG_BASE(0, format, ##__VA_ARGS__)} while(0);
+#define LOG_INFO(format, ...) do {LOG_BASE(1, format, ##__VA_ARGS__)} while(0);
+#define LOG_WARN(format, ...) do {LOG_BASE(2, format, ##__VA_ARGS__)} while(0);
+#define LOG_ERROR(format, ...) do {LOG_BASE(3, format, ##__VA_ARGS__)} while(0);
 
 #endif // SLIM_WEB_SERVER_LOG_H

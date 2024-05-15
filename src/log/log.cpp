@@ -5,7 +5,7 @@
 #include "log.h"
 
 // Constructor: Initializes the log system defaults.
-Log::Log() : lineCount_(0), day_(0), isAsync_(false), fp_(nullptr) {}
+Log::Log() : lineCount_(0), day_(0), isAsync_(false), fp_(nullptr),  blockDeque_(nullptr), writeThread_(nullptr) {}
 
 // Destructor: Ensures all resources are properly released and threads joined.
 Log::~Log() {
@@ -20,7 +20,6 @@ Log::~Log() {
         std::lock_guard<std::mutex> locker(mutex_);
         Flush();
         fclose(fp_);
-        fp_ = nullptr;
     }
 }
 
@@ -32,13 +31,14 @@ Log* Log::Instance() {
 
 // Triggers asynchronous log flushing.
 void Log::AsyncFlushLog() {
-    Log* log = Log::Instance();
-    log->AsyncWrite();
+    Log::Instance()->AsyncWrite_();
 }
 
 // Flushes the log buffer to the file.
 void Log::Flush() {
-    std::lock_guard<std::mutex> locker(mutex_);
+    if (isAsync_) {
+        blockDeque_->flush();
+    }
     fflush(fp_);
 }
 
@@ -75,7 +75,7 @@ void Log::Write(int level, const char* format, ...) {
         std::unique_lock<std::mutex> locker(mutex_);
         int n = snprintf(buffer_.BeginWrite(), 128, "%d-%02d-%02d %02d:%02d:%02d.%06ld ", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec, now.tv_usec);
         buffer_.AdvanceWritePointer(n);
-        AppendLogLevelTitle(level);
+        AppendLogLevelTitle_(level);
         ++lineCount_;
         va_start(vaList, format);
         int m = vsnprintf(buffer_.BeginWrite(), buffer_.GetWritableBytes(), format, vaList);
@@ -120,7 +120,7 @@ void Log::Init(int level, const char* path, const char* suffix, int capacity) {
     day_ = t.tm_mday;
 
     {
-        std::unique_lock<std::mutex> locker(mutex_);
+        std::lock_guard<std::mutex> locker(mutex_);
         buffer_.RetrieveAll();
         if (fp_) {
             Flush();
@@ -149,20 +149,20 @@ void Log::SetLevel(int level) {
 
 // Checks if the log file is open.
 bool Log::IsOpen() {
-    std::lock_guard<std::mutex> locker(mutex_);
     return isOpen_;
 }
 
 // Appends the log level title to the log message.
-void Log::AppendLogLevelTitle(int level) {
+void Log::AppendLogLevelTitle_(int level) {
     const char* titles[] = {"[debug]: ", "[info] : ", "[warn] : ", "[error]: "};
     buffer_.Append(titles[level], strlen(titles[level]));
 }
 
 // Writes log messages stored in the block deque to the file.
-void Log::AsyncWrite() {
+void Log::AsyncWrite_() {
     std::string str;
     while (blockDeque_->pop_front(str)) {
+        std::lock_guard<std::mutex> locker(mutex_);
         fputs(str.c_str(), fp_);
     }
 }
