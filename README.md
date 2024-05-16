@@ -16,7 +16,13 @@ slim-web-server: a high-performance, lightweight web server, also the beginning 
 
 - 利用正则与状态机解析HTTP请求报文，实现处理静态资源的请求、用户注册和登录；
 
-- 利用IO复用技术Epoll与线程池实现多线程的Reactor高并发模型；
+- 利用IO复用技术Epoll与线程池实现多线程的Reactor高并发模型，使用webbench-1.5进行压力测试可以实现上万的QPS；
+
+**webbench测试环境与结果**
+
+<img src="https://cdn.jsdelivr.net/gh/peng-yq/Gallery/202405160014635.png">
+
+> 一开始在WSL2中进行测试，效果很不理想。QPS很低，而且请求成功率也很低，以为是代码出问题了（因为我机子性能肯定没问题），后面换成了虚拟机才正常，看来WSL还是只能小打小闹。
 
 ## how-to-use
 
@@ -86,4 +92,5 @@ slim-web-server: a high-performance, lightweight web server, also the beginning 
   1. 代码风格更加统一规范
   2. 对部分模块进行了重新划分
   3. 对每一个模块编写了较为完整的README
-  4. 修复了一些明显的bug
+  4. 重构了Makfile，优化编译过程
+  5. 修复了一些明显的bug
