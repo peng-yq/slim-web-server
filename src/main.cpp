@@ -1,9 +1,21 @@
 #include <unistd.h>
 #include "server/web_server.h"
 
-/* 端口 ET模式 timeoutMs 优雅退出  */
-/* Mysql配置 */
-/* 连接池数量 线程池数量 日志开关 日志等级 日志异步队列容量 */
+/* listenPort, ET mode, timeoutMs for close connection, socket graceful exit (Linger) */
+/* Mysql configuration (port, user name, password, database name) */
+/* size of sql connection pools, size of thread pools, enable log, log level, log asynchronous queue capacity (0 means no async) */
+
+/*ET mode*/
+/* 0: Both listening and connection events are LT*/
+/* 1: The listening event is LT and the connection event is ET*/
+/* 2: The listening event is ET and the connection event is LT*/
+/* 3: Both listening and connection events are ET*/
+
+/*Log level*/
+/* 0: Debug, Info, Warn, Error*/
+/* 1: Info, Warn, Error*/
+/* 2: Warn, Error*/
+/* 3: Error*/
 
 int main() {
     WebServer server (
