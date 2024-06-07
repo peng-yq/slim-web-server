@@ -20,9 +20,11 @@ slim-web-server: a high-performance, lightweight web server, also the beginning 
 
 **webbench测试环境与结果**
 
-<img src="https://cdn.jsdelivr.net/gh/peng-yq/Gallery/202405160014635.png">
+<img src="https://cdn.jsdelivr.net/gh/peng-yq/Gallery/202406071038268.png">
 
 > 一开始在WSL2中进行测试，效果很不理想。QPS很低，而且请求成功率也很低，以为是代码出问题了（因为我机子性能肯定没问题），后面换成了虚拟机才正常，看来WSL还是只能小打小闹。
+
+> 关于性能测试：Webbench是一个在linux下使用的非常简单的网站压测工具。它使用fork()模拟多个客户端同时访问我们设定的URL，测试网站在压力下工作的性能，最多可以模拟3万个并发连接去测试网站的负载能力。因此测出来的数据只能说见仁见智，我后面又用apache-jmeter 5.6.3进行了测试，测出来的数据肯定是没有这么好看的，但也算能在高压下稳定，“高性能”的运行。当然还是那句话，脱离业务、机器和请求量谈高性能都是耍流氓。
 
 ## how-to-use
 
