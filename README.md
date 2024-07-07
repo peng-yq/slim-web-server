@@ -20,6 +20,8 @@ slim-web-server: a high-performance, lightweight web server, also the beginning 
 
 **webbench测试环境与结果**
 
+<img src="https://cdn.jsdelivr.net/gh/peng-yq/Gallery/202406051255703.png"/>
+
 <img src="https://cdn.jsdelivr.net/gh/peng-yq/Gallery/202406071038268.png">
 
 > 一开始在WSL2中进行测试，效果很不理想。QPS很低，而且请求成功率也很低，以为是代码出问题了（因为我机子性能肯定没问题），后面换成了虚拟机才正常，看来WSL还是只能小打小闹。
