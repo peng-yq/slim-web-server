@@ -2,6 +2,10 @@
 
 slim-web-server: a high-performance, lightweight web server, also the beginning of my modern c++ journey. 
 
+关于slim-web-server的详细介绍见[博客](https://peng-yq.github.io/2024/07/08/slim-web-server/)。
+
+<img src="https://cdn.jsdelivr.net/gh/peng-yq/Gallery/202407081243298.png"/>
+
 ## feature
 
 - 利用标准库容器封装char，实现动态增长的字节流缓冲区；
